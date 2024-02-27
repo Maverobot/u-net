@@ -335,10 +335,6 @@ def train_model(model, optimizer, scheduler, num_epochs=25):
         # Each epoch has a training and validation phase
         for phase in ["train", "val"]:
             if phase == "train":
-                scheduler.step()
-                for param_group in optimizer.param_groups:
-                    print("LR", param_group["lr"])
-
                 model.train()  # Set model to training mode
             else:
                 model.eval()  # Set model to evaluate mode
@@ -366,6 +362,11 @@ def train_model(model, optimizer, scheduler, num_epochs=25):
 
                 # statistics
                 epoch_samples += inputs.size(0)
+
+            if phase == "train":
+                scheduler.step()
+                for param_group in optimizer.param_groups:
+                    print("LR", param_group["lr"])
 
             print_metrics(metrics, epoch_samples, phase)
             epoch_loss = metrics["loss"] / epoch_samples
