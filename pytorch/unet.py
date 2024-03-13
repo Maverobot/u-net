@@ -1,10 +1,8 @@
 import test
 
-import models
 import torch
 import torch.nn as nn
 from torch.nn.functional import relu
-from torchvision import models
 
 # The implementation is copied from https://towardsdatascience.com/cook-your-first-u-net-in-pytorch-b3297a844cf3
 
