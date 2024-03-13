@@ -11,4 +11,11 @@ python unet.py
 
 ## mlx
 
-Not implemented yet.
+```sh
+cd mlx
+python unet.py
+```
+
+### TODO
+
+- [ ] Optimize mlx implementation to make it faster
