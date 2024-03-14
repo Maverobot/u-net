@@ -1,10 +1,34 @@
-import test
+import mlx
+import mlx.core as mx
+import mlx.nn as nn
+import test_unet
 
-import torch
-import torch.nn as nn
-from torch.nn.functional import relu
 
-# The implementation is copied from https://towardsdatascience.com/cook-your-first-u-net-in-pytorch-b3297a844cf3
+# from https://github.com/ml-explore/mlx-examples/blob/main/stable_diffusion/stable_diffusion/unet.py
+def upsample_nearest(x, scale: int = 2):
+    B, H, W, C = x.shape
+    x = mx.broadcast_to(x[:, :, None, :, None, :], (B, H, scale, W, scale, C))
+    x = x.reshape(B, H * scale, W * scale, C)
+    return x
+
+
+class UpsamplingConv2d(nn.Module):
+    """
+    A convolutional layer that upsamples the input by a factor of 2. MLX does
+    not yet support transposed convolutions, so we approximate them with
+    nearest neighbor upsampling followed by a convolution. This is similar to
+    the approach used in the original U-Net.
+    """
+
+    def __init__(self, in_channels, out_channels, kernel_size, stride, padding):
+        super().__init__()
+        self.conv = nn.Conv2d(
+            in_channels, out_channels, kernel_size, stride=stride, padding=padding
+        )
+
+    def __call__(self, x):
+        x = self.conv(upsample_nearest(x))
+        return x
 
 
 class UNet(nn.Module):
@@ -40,66 +64,66 @@ class UNet(nn.Module):
         self.e52 = nn.Conv2d(1024, 1024, kernel_size=3, padding=1)  # output: 28x28x1024
 
         # Decoder
-        self.upconv1 = nn.ConvTranspose2d(1024, 512, kernel_size=2, stride=2)
+        self.upconv1 = UpsamplingConv2d(1024, 512, kernel_size=3, stride=1, padding=1)
         self.d11 = nn.Conv2d(1024, 512, kernel_size=3, padding=1)
         self.d12 = nn.Conv2d(512, 512, kernel_size=3, padding=1)
 
-        self.upconv2 = nn.ConvTranspose2d(512, 256, kernel_size=2, stride=2)
+        self.upconv2 = UpsamplingConv2d(512, 256, kernel_size=3, stride=1, padding=1)
         self.d21 = nn.Conv2d(512, 256, kernel_size=3, padding=1)
         self.d22 = nn.Conv2d(256, 256, kernel_size=3, padding=1)
 
-        self.upconv3 = nn.ConvTranspose2d(256, 128, kernel_size=2, stride=2)
+        self.upconv3 = UpsamplingConv2d(256, 128, kernel_size=3, stride=1, padding=1)
         self.d31 = nn.Conv2d(256, 128, kernel_size=3, padding=1)
         self.d32 = nn.Conv2d(128, 128, kernel_size=3, padding=1)
 
-        self.upconv4 = nn.ConvTranspose2d(128, 64, kernel_size=2, stride=2)
+        self.upconv4 = UpsamplingConv2d(128, 64, kernel_size=3, stride=1, padding=1)
         self.d41 = nn.Conv2d(128, 64, kernel_size=3, padding=1)
         self.d42 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
 
         # Output layer
         self.outconv = nn.Conv2d(64, n_class, kernel_size=1)
 
-    def forward(self, x):
+    def __call__(self, x):
         # Encoder
-        xe11 = relu(self.e11(x))
-        xe12 = relu(self.e12(xe11))
+        xe11 = nn.relu(self.e11(x))
+        xe12 = nn.relu(self.e12(xe11))
         xp1 = self.pool1(xe12)
 
-        xe21 = relu(self.e21(xp1))
-        xe22 = relu(self.e22(xe21))
+        xe21 = nn.relu(self.e21(xp1))
+        xe22 = nn.relu(self.e22(xe21))
         xp2 = self.pool2(xe22)
 
-        xe31 = relu(self.e31(xp2))
-        xe32 = relu(self.e32(xe31))
+        xe31 = nn.relu(self.e31(xp2))
+        xe32 = nn.relu(self.e32(xe31))
         xp3 = self.pool3(xe32)
 
-        xe41 = relu(self.e41(xp3))
-        xe42 = relu(self.e42(xe41))
+        xe41 = nn.relu(self.e41(xp3))
+        xe42 = nn.relu(self.e42(xe41))
         xp4 = self.pool4(xe42)
 
-        xe51 = relu(self.e51(xp4))
-        xe52 = relu(self.e52(xe51))
+        xe51 = nn.relu(self.e51(xp4))
+        xe52 = nn.relu(self.e52(xe51))
 
         # Decoder
         xu1 = self.upconv1(xe52)
-        xu11 = torch.cat([xu1, xe42], dim=1)
-        xd11 = relu(self.d11(xu11))
-        xd12 = relu(self.d12(xd11))
+        xu11 = mx.concatenate([xu1, xe42], axis=3)
+        xd11 = nn.relu(self.d11(xu11))
+        xd12 = nn.relu(self.d12(xd11))
 
         xu2 = self.upconv2(xd12)
-        xu22 = torch.cat([xu2, xe32], dim=1)
-        xd21 = relu(self.d21(xu22))
-        xd22 = relu(self.d22(xd21))
+        xu22 = mx.concatenate([xu2, xe32], axis=3)
+        xd21 = nn.relu(self.d21(xu22))
+        xd22 = nn.relu(self.d22(xd21))
 
         xu3 = self.upconv3(xd22)
-        xu33 = torch.cat([xu3, xe22], dim=1)
-        xd31 = relu(self.d31(xu33))
-        xd32 = relu(self.d32(xd31))
+        xu33 = mx.concatenate([xu3, xe22], axis=3)
+        xd31 = nn.relu(self.d31(xu33))
+        xd32 = nn.relu(self.d32(xd31))
 
         xu4 = self.upconv4(xd32)
-        xu44 = torch.cat([xu4, xe12], dim=1)
-        xd41 = relu(self.d41(xu44))
-        xd42 = relu(self.d42(xd41))
+        xu44 = mx.concatenate([xu4, xe12], axis=3)
+        xd41 = nn.relu(self.d41(xu44))
+        xd42 = nn.relu(self.d42(xd41))
 
         # Output layer
         out = self.outconv(xd42)
@@ -108,4 +132,4 @@ class UNet(nn.Module):
 
 
 if __name__ == "__main__":
-    test.run(UNet)
+    test_unet.run(UNet)
