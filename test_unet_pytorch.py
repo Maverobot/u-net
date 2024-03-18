@@ -12,7 +12,7 @@ from torch.optim import lr_scheduler
 from torch.utils.data import DataLoader, Dataset
 from torchvision import datasets, models, transforms
 
-from data_utils import generate_random_data
+from data_utils import generate_random_rgb_data
 
 
 def get_device():
@@ -26,7 +26,7 @@ def get_device():
 
 class SimDataset(Dataset):
     def __init__(self, count, transform=None):
-        self.input_images, self.target_masks = generate_random_data(
+        self.input_images, self.target_masks = generate_random_rgb_data(
             192, 192, count=count
         )
         self.transform = transform

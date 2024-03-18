@@ -13,12 +13,12 @@ import numpy as np
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 
-from data_utils import generate_random_data
+from data_utils import generate_random_rgb_data
 
 
 class SimDataset(Dataset):
     def __init__(self, count, transform=None):
-        self.input_images, self.target_masks = generate_random_data(
+        self.input_images, self.target_masks = generate_random_rgb_data(
             192, 192, count=count
         )
         self.transform = transform

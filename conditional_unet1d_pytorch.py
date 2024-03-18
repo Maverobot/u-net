@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from einops.layers.torch import Rearrange
 
-from data_utils import generate_images_and_masks_then_plot
+from data_utils import generate_grey_images_and_then_plot
 
 
 class Downsample1d(nn.Module):
@@ -353,4 +353,4 @@ class ConditionalUnet1D(nn.Module):
 
 
 if __name__ == "__main__":
-    model = ConditionalUnet1D(input_dim=2)
+    generate_grey_images_and_then_plot()

@@ -5,7 +5,56 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def generate_random_data(height, width, count):
+def generate_random_grey_data(height, width, count):
+    images = [generate_grey_img(height, width) for i in range(0, count)]
+
+    return np.asarray(images) * 255
+
+
+def generate_grey_images_and_then_plot():
+    # Generate some random grey images
+    input_images = generate_random_grey_data(192, 192, count=3)
+
+    for x in [input_images]:
+        print(x.shape)
+        print(x.min(), x.max())
+
+    ncol = 1
+    nrow = len(input_images) // ncol
+
+    f, plots = plt.subplots(
+        nrow, ncol, sharex="all", sharey="all", figsize=(ncol * 4, nrow * 4)
+    )
+
+    for i in range(len(input_images)):
+        plots[i // ncol]
+        plots[i // ncol].imshow(input_images[i], cmap="gray", vmin=0, vmax=255)
+    plt.show()
+
+
+def generate_grey_img(height, width):
+    shape = (height, width)
+
+    triangle_location = get_random_location(*shape)
+    circle_location1 = get_random_location(*shape, zoom=0.7)
+    circle_location2 = get_random_location(*shape, zoom=0.5)
+    mesh_location = get_random_location(*shape)
+    square_location = get_random_location(*shape, zoom=0.8)
+    plus_location = get_random_location(*shape, zoom=1.2)
+
+    # Create input image
+    arr = np.zeros(shape, dtype=bool)
+    arr = add_triangle(arr, *triangle_location)
+    arr = add_circle(arr, *circle_location1)
+    arr = add_circle(arr, *circle_location2, fill=True)
+    arr = add_mesh_square(arr, *mesh_location)
+    arr = add_filled_square(arr, *square_location)
+    arr = add_plus(arr, *plus_location)
+
+    return arr
+
+
+def generate_random_rgb_data(height, width, count):
     x, y = zip(*[generate_img_and_mask(height, width) for i in range(0, count)])
 
     X = np.asarray(x) * 255
@@ -189,7 +238,7 @@ def masks_to_colorimg(masks):
 
 def generate_images_and_masks_then_plot():
     # Generate some random images
-    input_images, target_masks = generate_random_data(192, 192, count=3)
+    input_images, target_masks = generate_random_rgb_data(192, 192, count=3)
 
     for x in [input_images, target_masks]:
         print(x.shape)
