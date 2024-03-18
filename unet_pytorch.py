@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.nn.functional import relu
 
-import test_unet
+import test_unet_pytorch
 
 # The implementation is copied from https://towardsdatascience.com/cook-your-first-u-net-in-pytorch-b3297a844cf3
 
@@ -108,4 +108,4 @@ class UNet(nn.Module):
 
 
 if __name__ == "__main__":
-    test_unet.run(UNet)
+    test_unet_pytorch.run(UNet)

@@ -5,15 +5,13 @@ This repo implements U-Net in PyTorch and MLX. The initial code is based on the 
 ## pytorch
 
 ```sh
-cd pytorch/unet
-python unet.py
+python unet_pytorch.py
 ```
 
 ## mlx
 
 ```sh
-cd mlx/unet
-python unet.py
+python unet_mlx.py
 ```
 
 ### TODO

@@ -3,9 +3,7 @@ import copy
 import itertools
 import time
 from collections import defaultdict
-from functools import reduce
 
-import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn.functional as F

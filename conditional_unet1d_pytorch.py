@@ -8,6 +8,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from einops.layers.torch import Rearrange
 
+from data_utils import generate_images_and_masks_then_plot
+
 
 class Downsample1d(nn.Module):
     def __init__(self, dim):

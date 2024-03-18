@@ -1,7 +1,8 @@
-import mlx
 import mlx.core as mx
 import mlx.nn as nn
-import test_unet
+
+import mlx
+import test_unet_mlx
 
 
 # from https://github.com/ml-explore/mlx-examples/blob/main/stable_diffusion/stable_diffusion/unet.py
@@ -132,4 +133,4 @@ class UNet(nn.Module):
 
 
 if __name__ == "__main__":
-    test_unet.run(UNet)
+    test_unet_mlx.run(UNet)
